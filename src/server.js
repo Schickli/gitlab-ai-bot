@@ -1,6 +1,7 @@
 const Fastify = require("fastify");
 const { GITLAB_SECRET } = require("./config");
-const { handleChangelogUpdate } = require("./handlers");
+const { handleChangelogUpdate, handleChangelogReminder } = require("./handlers");
+const { postCommentReply } = require("./gitlabService");
 
 const fastify = Fastify({ logger: true });
 
@@ -22,14 +23,32 @@ fastify.post("/changelog", async (request, reply) => {
     return reply.send({ success: false, message: "Comment is not on a merge request" });
   }
 
-  if (!payload.object_attributes.note.includes("!changelog")) {
-    return reply.send({ success: false, message: "Comment does not contain !changelog" });
+  if (!payload.object_attributes.note.includes("!changelog") || payload.object_attributes.note.includes("🚀")) {
+    return reply.send({ success: false });
   }
 
   await handleChangelogUpdate(payload);
   postCommentReply(mergeRequest.iid, "Updating of changelog was successful ✅", payload.object_attributes.discussion_id);
 
   reply.send({ success: true });
+});
+
+fastify.post("/changelog-reminder", async (request, reply) => {
+  const payload = request.body;
+
+  if (payload.event_type !== "merge_request") {
+    return reply.send({ success: false, message: "Not a merge request event" });
+  }
+
+  const { object_attributes: mr } = payload;
+
+  if (mr.state !== "opened" || mr.draft) {
+    return reply.send({ success: false, message: "MR is not open or still in draft" });
+  }
+
+  await handleChangelogReminder(mr);
+
+  reply.send({ success: true, message: "Changelog reminder posted" });
 });
 
 // Start the server

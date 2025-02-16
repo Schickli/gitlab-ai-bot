@@ -32,6 +32,21 @@ async function postCommentReply(mriid, comment, discussion_id) {
   }
 }
 
+async function postComment(mriid, comment) {
+  try {
+    await axios.post(
+      `${GITLAB_API_URL}/projects/${GITLAB_PROJECT_ID}/merge_requests/${mriid}/notes`,
+      { body: comment },
+      {
+        headers: { "PRIVATE-TOKEN": GITLAB_ACCESS_TOKEN },
+      }
+    );
+
+  } catch (error) {
+    console.error("Error posting comment:", error.response?.data || error.message);
+  }
+}
+
 async function suggestEditChangelog(branch, changelog) {
   try {
     const filePath = encodeURIComponent(CHANGELOG_LOCATION);
@@ -90,4 +105,4 @@ async function suggestEditChangelog(branch, changelog) {
   }
 }
 
-module.exports = { getMergeRequestChanges, postCommentReply, suggestEditChangelog };
+module.exports = { getMergeRequestChanges, postCommentReply, suggestEditChangelog, postComment };

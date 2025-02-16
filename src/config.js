@@ -7,4 +7,5 @@ module.exports = {
   GITLAB_ACCESS_TOKEN: process.env.GITLAB_ACCESS_TOKEN,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   CHANGELOG_LOCATION: "docs/changelog.md",
+  JIRA_FORMAT: "/PBUZIOT-\d{5}/",
 };

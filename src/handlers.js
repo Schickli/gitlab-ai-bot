@@ -1,4 +1,5 @@
-const { getMergeRequestChanges, postCommentReply, suggestEditChangelog } = require("./gitlabService");
+const { JIRA_FORMAT } = require("./config");
+const { getMergeRequestChanges, postCommentReply, suggestEditChangelog, postComment } = require("./gitlabService");
 const { promptChangelog } = require("./openAi");
 
 async function handleChangelogUpdate(payload) {
@@ -12,7 +13,7 @@ async function handleChangelogUpdate(payload) {
 
   const diff = await getMergeRequestChanges(mergeRequest.iid)
 
-  if (changelogAlreadExists(diff)) {
+  if (changelogAlreadyExists(diff)) {
     postCommentReply(mergeRequest.iid, "Changelog already exists in this MR ✅", payload.object_attributes.discussion_id);
     return;
   }
@@ -27,7 +28,10 @@ async function handleChangelogUpdate(payload) {
     return;
   }
 
-  const changelog = response.text + " (" + ticketNumber + ")";
+  let changelog = response.text;
+  if(ticketNumber !== "") {
+    changelog = changelog + " (" + ticketNumber + ")";
+  }
 
   const result = await suggestEditChangelog(mergeRequest.source_branch, changelog);
   if (!result) {
@@ -37,7 +41,7 @@ async function handleChangelogUpdate(payload) {
 }
 
 function getTicketNumberFromMR(desc) {
-  const jiraTicketMatch = desc.match(/PBUZIOT-\d{5}/);
+  const jiraTicketMatch = desc.match(JIRA_FORMAT);
   if (!jiraTicketMatch) {
     console.info("No JIRA ticket found in description");
     return "";
@@ -46,7 +50,7 @@ function getTicketNumberFromMR(desc) {
   return jiraTicketMatch[0];
 }
 
-function changelogAlreadExists(diff) {
+function changelogAlreadyExists(diff) {
   const changelogChanges = diff.find(change =>
     change.new_path.toLowerCase().includes('changelog.md')
   );
@@ -74,4 +78,18 @@ function createDiffString(diff) {
   return diffString;
 }
 
-module.exports = { handleChangelogUpdate };
+
+async function handleChangelogReminder(mergeRequest) {
+  const diff = await getMergeRequestChanges(mergeRequest.iid)
+
+  if (changelogAlreadyExists(diff)) {
+    return;
+  }
+
+  await postComment(
+    mergeRequest.iid,
+    "You are missing a changelog! 🚀 Remember to add it manually or use `!changelog` in a comment to automatically update the changelog with AI!"
+  );
+}
+
+module.exports = { handleChangelogUpdate, handleChangelogReminder};

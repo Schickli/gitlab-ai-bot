@@ -28,7 +28,7 @@ fastify.post("/changelog", async (request, reply) => {
   }
 
   await handleChangelogUpdate(payload);
-  postCommentReply(mergeRequest.iid, "Updating of changelog was successful ✅", payload.object_attributes.discussion_id);
+  postCommentReply(payload.merge_request.iid, "Updating of changelog was successful ✅", payload.object_attributes.discussion_id);
 
   reply.send({ success: true });
 });

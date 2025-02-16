@@ -9,7 +9,7 @@ const openai = createOpenAI({
 
 const prompt = 
     `Please create a changelog entry based on these changes from the pullrequest. 
-    Use one of the prefixes: (whichever suits you best)
+    Use one of the prefixes: (whichever suits you best) (ALWAYS USE ONE OF THESE PREFIXES AND INCLUDE THE - and **):
     - **Added**: Changelog entry here.
     - **Fixed**: Changelog entry here.
     - **Changed**: Changelog entry here.

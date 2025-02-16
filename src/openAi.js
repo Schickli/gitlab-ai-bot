@@ -20,17 +20,16 @@ const prompt =
     These are the changes: `;
 
 async function promptChangelog(codeDiff) {
-    // const { text } = await generateText({
-    //     model: openai('gpt-4o-mini-2024-07-18'),
-    //     prompt: prompt + codeDiff,
-    //     onError({ error }) {
-    //         console.error(error);
-    //         return { text: null, error: true };
-    //     },
-    // });
+    const { text } = await generateText({
+        model: openai('gpt-4o-mini-2024-07-18'),
+        prompt: prompt + codeDiff,
+        onError({ error }) {
+            console.error(error);
+            return { text: null, error: true };
+        },
+    });
 
-    return { text: "- **Added**: Introduced a new ASCII art representation in the maurin.js file and updated the test.md file with additional content for system testing and ownership clarification.", error: false };
-    // return { text: text, error: false };
+    return { text: text, error: false };
 }
 
 module.exports = { promptChangelog };

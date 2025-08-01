@@ -7,7 +7,7 @@ const fastify = Fastify({ logger: true });
 
 fastify.addHook("preHandler", async (request, reply) => {
   const signature = request.headers["x-gitlab-token"];
-  
+
   if (!signature || signature !== GITLAB_SECRET) {
     reply.code(401).send({ error: "Unauthorized" });
   }
@@ -15,6 +15,7 @@ fastify.addHook("preHandler", async (request, reply) => {
 
 fastify.post("/webhook", async (request, reply) => {
   const payload = request.body;
+  const projectId = payload.project.id;
 
   // Handle comment events (changelog creation)
   if (payload.event_type === "note") {
@@ -27,7 +28,7 @@ fastify.post("/webhook", async (request, reply) => {
     }
 
     await handleChangelogUpdate(payload);
-    postCommentReply(payload.merge_request.iid, "Updating of changelog was successful ✅", payload.object_attributes.discussion_id);
+    postCommentReply(payload.merge_request.iid, "Updating of changelog was successful ✅", payload.object_attributes.discussion_id, projectId);
 
     return reply.send({ success: true, message: "Changelog updated successfully" });
   }

@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 module.exports = {
   GITLAB_SECRET: process.env.GITLAB_SECRET,
   GITLAB_API_URL: process.env.GITLAB_API_URL,

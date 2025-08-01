@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "node --env-file=.env ./src/server.js",
-    "expose": "./ngrok.exe http 3000",
+    "start": "bun --env-file=.env ./src/server.js",
+    "expose": "ngrok http 3000",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,7 +15,6 @@
     "@ai-sdk/openai": "^1.1.11",
     "ai": "^4.1.41",
     "axios": "^1.7.9",
-    "dotenv": "^16.4.7",
     "fastify": "^5.2.1",
     "fastify-cors": "^6.0.3"
   }

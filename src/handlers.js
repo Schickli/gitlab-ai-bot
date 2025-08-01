@@ -1,20 +1,22 @@
-const { JIRA_FORMAT } = require("./config");
-const { getMergeRequestChanges, postCommentReply, suggestEditChangelog, postComment } = require("./gitlabService");
-const { promptChangelog } = require("./openAi");
+import { JIRA_FORMAT } from "./config.js";
+import { getMergeRequestChanges, postCommentReply, suggestEditChangelog, postComment } from "./gitlabService.js";
+import { promptChangelog } from "./openAi.js";
 
 async function handleChangelogUpdate(payload) {
   const mergeRequest = payload.merge_request;
+  const projectId = payload.project.id;
+
   if (!mergeRequest) {
-    postCommentReply(mergeRequest.iid, "There are no changes to create a changelog on ❌", payload.object_attributes.discussion_id);
+    postCommentReply(mergeRequest.iid, "There are no changes to create a changelog on ❌", payload.object_attributes.discussion_id, projectId);
     return;
   }
 
   const ticketNumber = getTicketNumberFromMR(mergeRequest.description);
 
-  const diff = await getMergeRequestChanges(mergeRequest.iid)
+  const diff = await getMergeRequestChanges(mergeRequest.iid, projectId)
 
   if (changelogAlreadyExists(diff)) {
-    postCommentReply(mergeRequest.iid, "Changelog already exists in this MR ✅", payload.object_attributes.discussion_id);
+    postCommentReply(mergeRequest.iid, "Changelog already exists in this MR ✅", payload.object_attributes.discussion_id, projectId);
     return;
   }
 
@@ -24,7 +26,7 @@ async function handleChangelogUpdate(payload) {
 
   const response = await promptChangelog(codeDiffString)
   if (response.error) {
-    postCommentReply(mergeRequest.iid, "Error generating changelog ❌", payload.object_attributes.discussion_id);
+    postCommentReply(mergeRequest.iid, "Error generating changelog ❌", payload.object_attributes.discussion_id, projectId);
     return;
   }
 
@@ -35,7 +37,7 @@ async function handleChangelogUpdate(payload) {
 
   const result = await suggestEditChangelog(mergeRequest.source_branch, changelog);
   if (!result) {
-    postCommentReply(mergeRequest.iid, "Error suggesting changelog edit ❌", payload.object_attributes.discussion_id);
+    postCommentReply(mergeRequest.iid, "Error suggesting changelog edit ❌", payload.object_attributes.discussion_id, projectId);
     return;
   }
 }
@@ -80,7 +82,7 @@ function createDiffString(diff) {
 
 
 async function handleChangelogReminder(mergeRequest) {
-  const diff = await getMergeRequestChanges(mergeRequest.iid)
+  const diff = await getMergeRequestChanges(mergeRequest.iid, projectId)
 
   if (changelogAlreadyExists(diff)) {
     return;
@@ -88,8 +90,9 @@ async function handleChangelogReminder(mergeRequest) {
 
   await postComment(
     mergeRequest.iid,
-    "You are missing a changelog! 🚀 Remember to add it manually or use `!changelog` in a comment to automatically update the changelog with AI!"
+    "You are missing a changelog! 🚀 Remember to add it manually or use `!changelog` in a comment to automatically update the changelog with AI!",
+    projectId
   );
 }
 
-module.exports = { handleChangelogUpdate, handleChangelogReminder};
+export { handleChangelogUpdate, handleChangelogReminder };

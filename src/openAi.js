@@ -1,7 +1,7 @@
-const { generateText } = require('ai');
-const { createOpenAI } = require('@ai-sdk/openai');
+import { generateText } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
 
-const { OPENAI_API_KEY } = require("./config");
+import { OPENAI_API_KEY } from "./config.js";
 
 const openai = createOpenAI({
     apiKey: OPENAI_API_KEY,
@@ -32,4 +32,4 @@ async function promptChangelog(codeDiff) {
     return { text: text, error: false };
 }
 
-module.exports = { promptChangelog };
+export { promptChangelog };

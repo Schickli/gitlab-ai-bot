@@ -1,14 +1,12 @@
-const Fastify = require("fastify");
-const { GITLAB_SECRET } = require("./config");
-const { handleChangelogUpdate, handleChangelogReminder } = require("./handlers");
-const { postCommentReply } = require("./gitlabService");
+import Fastify from "fastify";
+import { GITLAB_SECRET } from "./config.js";
+import { handleChangelogUpdate, handleChangelogReminder } from "./handlers.js";
+import { postCommentReply } from "./gitlabService.js";
 
 const fastify = Fastify({ logger: true });
 
 fastify.addHook("preHandler", async (request, reply) => {
   const signature = request.headers["x-gitlab-token"];
-  console.log("Received signature:", signature);
-  console.log("My signature", GITLAB_SECRET);
   
   if (!signature || signature !== GITLAB_SECRET) {
     reply.code(401).send({ error: "Unauthorized" });
@@ -18,7 +16,6 @@ fastify.addHook("preHandler", async (request, reply) => {
 fastify.post("/webhook", async (request, reply) => {
   const payload = request.body;
 
-  console.log("Received webhook payload:", JSON.stringify(payload, null, 2));
   // Handle comment events (changelog creation)
   if (payload.event_type === "note") {
     if (payload.object_attributes.noteable_type !== "MergeRequest") {

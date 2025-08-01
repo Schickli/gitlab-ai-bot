@@ -1,10 +1,10 @@
-const axios = require("axios");
-const { GITLAB_API_URL, GITLAB_PROJECT_ID, GITLAB_ACCESS_TOKEN, CHANGELOG_LOCATION } = require("./config");
+import axios from "axios";
+import { GITLAB_API_URL, GITLAB_ACCESS_TOKEN, GITLAB_PROJECT_ID, CHANGELOG_LOCATION } from "./config.js";
 
-async function getMergeRequestChanges(mriid) {
+async function getMergeRequestChanges(mriid, projectId) {
   try {
     const response = await axios.get(
-      `${GITLAB_API_URL}/projects/${GITLAB_PROJECT_ID}/merge_requests/${mriid}/diffs`,
+      `${GITLAB_API_URL}/projects/${projectId}/merge_requests/${mriid}/diffs`,
       {
         headers: { "PRIVATE-TOKEN": GITLAB_ACCESS_TOKEN },
       }
@@ -17,10 +17,10 @@ async function getMergeRequestChanges(mriid) {
   }
 }
 
-async function postCommentReply(mriid, comment, discussion_id) {
+async function postCommentReply(mriid, comment, discussion_id, projectId) {
   try {
     await axios.post(
-      `${GITLAB_API_URL}/projects/${GITLAB_PROJECT_ID}/merge_requests/${mriid}/discussions/${discussion_id}/notes`,
+      `${GITLAB_API_URL}/projects/${projectId}/merge_requests/${mriid}/discussions/${discussion_id}/notes`,
       { body: comment },
       {
         headers: { "PRIVATE-TOKEN": GITLAB_ACCESS_TOKEN },
@@ -32,10 +32,10 @@ async function postCommentReply(mriid, comment, discussion_id) {
   }
 }
 
-async function postComment(mriid, comment) {
+async function postComment(mriid, comment, projectId) {
   try {
     await axios.post(
-      `${GITLAB_API_URL}/projects/${GITLAB_PROJECT_ID}/merge_requests/${mriid}/notes`,
+      `${GITLAB_API_URL}/projects/${projectId}/merge_requests/${mriid}/notes`,
       { body: comment },
       {
         headers: { "PRIVATE-TOKEN": GITLAB_ACCESS_TOKEN },
@@ -47,14 +47,14 @@ async function postComment(mriid, comment) {
   }
 }
 
-async function suggestEditChangelog(branch, changelog) {
+async function suggestEditChangelog(branch, changelog, projectId) {
   try {
     const filePath = encodeURIComponent(CHANGELOG_LOCATION);
     let content;
     
     try {
       const response = await axios.get(
-        `${GITLAB_API_URL}/projects/${GITLAB_PROJECT_ID}/repository/files/${filePath}/raw`,
+        `${GITLAB_API_URL}/projects/${projectId}/repository/files/${filePath}/raw`,
         {
           headers: { "PRIVATE-TOKEN": GITLAB_ACCESS_TOKEN },
           params: { ref: 'main' }
@@ -105,4 +105,4 @@ async function suggestEditChangelog(branch, changelog) {
   }
 }
 
-module.exports = { getMergeRequestChanges, postCommentReply, suggestEditChangelog, postComment };
+export { getMergeRequestChanges, postCommentReply, suggestEditChangelog, postComment };

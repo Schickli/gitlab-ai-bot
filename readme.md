@@ -25,5 +25,8 @@ If you are running the bot locally you can use `ngrok http 3000` to create a tun
 ## Todo
 
 - [] Add more context with Jira Ticket information
-- [] Test the bot with bigger Merge Requests
 - [] Add support for quiz questions
+  - [] Add support for quoting code directly in the question
+  - [] Add all questions immediately instead of one by one
+  - [] improve storing of questions (currently only in memory, should be stored in a database for persistence)
+- [] Test the bot with more complex merge requests (real code repositories, not just the example repository)

@@ -51,6 +51,32 @@ class GitLabService {
     }
   }
 
+  // TODO: Check gitlab documenation again
+  async postCommentOnLine(mrIid, comment, projectId, filePath, lineNumber) {
+    try {
+      await axios.post(
+        `${this.apiUrl}/projects/${projectId}/merge_requests/${mrIid}/discussions`,
+        {
+          body: comment,
+          position: {
+            position_type: 'text',
+            new_path: filePath,
+            new_line: lineNumber,
+            base_sha: null,
+            head_sha: null,
+            start_sha: null
+          }
+        },
+        {
+          headers: { 'PRIVATE-TOKEN': this.accessToken },
+        }
+      );
+    } catch (error) {
+      console.warn(`Failed to post comment on line, falling back to regular comment: ${error.message}`);
+      await this.postComment(mrIid, comment, projectId);
+    }
+  }
+
   async updateChangelog(branch, changelog, projectId) {
     try {
       const filePath = encodeURIComponent(this.changelogLocation);

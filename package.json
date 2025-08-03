@@ -17,6 +17,7 @@
     "ai": "^4.1.41",
     "axios": "^1.7.9",
     "fastify": "^5.2.1",
-    "fastify-cors": "^6.0.3"
+    "fastify-cors": "^6.0.3",
+    "fastify-plugin": "^5.0.1"
   }
 }

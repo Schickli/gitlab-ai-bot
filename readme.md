@@ -25,6 +25,7 @@ If you are running the bot locally you can use `ngrok http 3000` to create a tun
 ## Todo
 
 - [] Add more context with Jira Ticket information
+- [] Instead of creating a commit for the changelog entry, create a comment on the merge request with a suggested changelog entry
 - [] Add support for quiz questions
   - [] Add support for quoting code directly in the question
   - [] Add all questions immediately instead of one by one

@@ -1,22 +1,29 @@
-# Gitlab AI Changelog Bot
+# Gitlab AI Bot
 
 This Gitlab bot is designed to help you to never forget you changelog entry again by automatically creating a changelog entry for your merge request.
 
 ## How to use
 
-Create a `.env` file with the environment variables specified in the `config.js`.
+Create a `.env` file with the environment variables specified in the `config.js`.https://github.com/Schickli/gitlab-ai-bot/blob/main/readme.md
 The `GITLAB_SECRET` is the secret token you have to set in your Gitlab webhook.
 
-You need to create a webhook in your Gitlab project, pointing to the endpoint `/webhook`.
+You need to create two webhooks in your Gitlab project, pointing to the endpoint `/changelog` and `/quiz`.
 
-### Webhook Configuration
+### Changelog Configuration
 
-The webhook should use the URL: `https://your-bot-or-ngrok-url.com/webhook`
+The webhook should use the URL: `https://your-bot-or-ngrok-url.com/changelog`
 
 1. **Changelog Reminder**: Select "Merge Requests" as the trigger. This runs when you create a new merge request that's not a draft and posts a reminder comment to add a changelog entry.
    ![reminder comment](assets/image.png)
 
 2. **Changelog Creation**: Select "Comments" as the trigger. This runs when a comment containing `!changelog` is created on a merge request. The bot will generate a changelog entry using GPT-4o-mini based on the changes made and attempt to parse the issue number from the merge request description.
+
+### Quiz Configuration
+
+The webhook should use the URL: `https://your-bot-or-ngrok-url.com/quiz`
+
+1. **Quiz Prompt**: Select "Merge Requests" and "Comments" as the trigger. Now, when you open a merge request a comment with the prompt to use `!quiz` pops up.
+2. **Questions**: After the `!quiz` we generate a few multiplechoice questions to the code. The comments will be next to the code and can be answerd with a,b or c. This triggers another event and we check your answer and give you feedback.
 
 ### Running the bot
 

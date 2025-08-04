@@ -30,6 +30,7 @@ The webhook should use the URL: `https://your-bot-or-ngrok-url.com/changelog`
 The webhook should use the URL: `https://your-bot-or-ngrok-url.com/quiz`
 
 1. **Quiz Prompt**: Select "Merge Requests" and "Comments" as the trigger. When you open a merge request, a comment with the prompt to use `!quiz` appears.
+   ![quiz prompt](assets/quizprompt.png)
 2. **Questions**: After typing `!quiz`, we generate a few multiple-choice questions about the code. The comments will be next to the code and can be answered with a, b, or c. This triggers another event and we check your answer and give you feedback.
 
 ### Running the Bot

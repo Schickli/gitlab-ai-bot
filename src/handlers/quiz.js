@@ -34,7 +34,10 @@ class QuizHandler {
         score: 0
       });
 
-      await this._postQuizQuestion(mergeRequest.iid, projectId, quizQuestions[0], 1, payload.object_attributes.discussion_id);
+      // Post all questions immediately
+      for (let i = 0; i < quizQuestions.length; i++) {
+        await this._postQuizQuestion(mergeRequest.iid, projectId, quizQuestions[i], i + 1);
+      }
       
     } catch (error) {
       await this.gitlabService.postCommentReply(
@@ -86,30 +89,17 @@ class QuizHandler {
 
     if (quiz.currentQuestion < quiz.questions.length) {
       responseMessage += `\n\nScore: ${quiz.score}/${quiz.currentQuestion}`;
-      await this.gitlabService.postCommentReply(
-        mergeRequest.iid,
-        responseMessage,
-        payload.object_attributes.discussion_id,
-        projectId
-      );
-      
-      await this._postQuizQuestion(
-        mergeRequest.iid, 
-        projectId, 
-        quiz.questions[quiz.currentQuestion], 
-        quiz.currentQuestion + 1
-      );
     } else {
       responseMessage += `\n\n🎉 Quiz completed! Final score: ${quiz.score}/${quiz.questions.length}`;
-      await this.gitlabService.postCommentReply(
-        mergeRequest.iid,
-        responseMessage,
-        payload.object_attributes.discussion_id,
-        projectId
-      );
-      
       this.activeQuizzes.delete(quizKey);
     }
+
+    await this.gitlabService.postCommentReply(
+      mergeRequest.iid,
+      responseMessage,
+      payload.object_attributes.discussion_id,
+      projectId
+    );
   }
 
   async handleQuizReminder(mergeRequest, projectId) {
@@ -125,8 +115,8 @@ class QuizHandler {
     }
   }
 
-  async _postQuizQuestion(mergeRequestIid, projectId, question, questionNumber, discussionId = null) {
-    const questionText = `**Question ${questionNumber}:**\n${question.question}\n\na) ${question.answers.a}\nb) ${question.answers.b}\nc) ${question.answers.c}\n\nReply with a, b, or c`;
+  async _postQuizQuestion(mergeRequestIid, projectId, question, questionNumber) {
+    const questionText = `**Question ${questionNumber}:**\n${question.question}\n\n - a) ${question.answers.a}\n - b) ${question.answers.b}\n - c) ${question.answers.c}\n\nReply with a, b, or c`;
     
     if (question.gitInfo && question.gitInfo.file) {
       await this.gitlabService.postCommentOnLine(
@@ -135,13 +125,6 @@ class QuizHandler {
         projectId,
         question.gitInfo.file,
         question.gitInfo.lineStart
-      );
-    } else if (discussionId) {
-      await this.gitlabService.postCommentReply(
-        mergeRequestIid,
-        questionText,
-        discussionId,
-        projectId
       );
     } else {
       await this.gitlabService.postComment(

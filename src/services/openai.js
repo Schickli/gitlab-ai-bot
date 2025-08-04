@@ -1,6 +1,6 @@
 import { generateText, generateObject } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { config } from '../config/index.js';
 
 class OpenAIService {
@@ -8,7 +8,7 @@ class OpenAIService {
     this.openai = createOpenAI({
       apiKey: config.openai.apiKey,
     });
-    
+
     this.prompt = `Please create a changelog entry based on these changes from the pullrequest. 
     Use one of the prefixes: (whichever suits you best) (ALWAYS USE ONE OF THESE PREFIXES AND INCLUDE THE - and **):
     - **Added**: Changelog entry here.
@@ -20,22 +20,22 @@ class OpenAIService {
 
     These are the changes: `;
 
-    this.quizPrompt = `Based on these code changes from a pull request, generate quiz questions to test understanding of the code. 
-    Focus on:
-    - Understanding what the code does
-    - Logic and functionality
-    - Potential issues or edge cases
-    - Best practices
+    this.quizPrompt = `
+    Based on these code changes from a pull request, generate quiz questions that are strictly relevant and insightful. 
+    Only generate questions if the changes are significant; minor or trivial changes should not produce any quiz. 
+    Additionally, ensure each question focuses on a different and unique part of the code without overlapping sections.
 
-    For each question, identify the specific file and line range the question relates to.
-    Generate 3-5 multiple choice questions with exactly 3 options (a, b, c).
+    Focus on these aspects:
+    - Understanding the core functionality and logic
+    - Identifying potential issues or edge cases
+    - Evaluating best practices and architectural decisions
 
-    If the question is simple, leave it out. The questions should be challenging and require a good understanding of the code. 
-    If the code is simple or short do not force a question.
+    For each question, include:
+    - A clear quiz question referencing the specific file and line range it pertains to.
+    - Exactly 3 distinct multiple-choice options (a, b, c) with one correct answer.
 
-    The questions should be in markdown format that follow the Gitlab flavour.
-    IMPORTANT: The a) b) c) options should each be on a new line for better readability.
-    
+    Format the questions in Gitlab-flavoured Markdown and ensure they are challenging for a senior developer.
+
     These are the changes: `;
 
     this.quizSchema = z.object({
@@ -72,7 +72,7 @@ class OpenAIService {
   async generateQuiz(codeDiff) {
     try {
       const { object } = await generateObject({
-        model: this.openai('gpt-4o'),
+        model: this.openai('gpt-4.1'),
         prompt: this.quizPrompt + codeDiff,
         schema: this.quizSchema,
       });

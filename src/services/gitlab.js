@@ -51,21 +51,49 @@ class GitLabService {
     }
   }
 
-  // TODO: Check gitlab documenation again
-  async postCommentOnLine(mrIid, comment, projectId, filePath, lineNumber) {
+  // https://docs.gitlab.com/api/discussions/#create-a-new-thread-in-the-merge-request-diff
+  async postCommentOnLine(mrIid, comment, projectId, filePath, lineNumber, oldPath = null, oldLine = null) {
     try {
+      // Get the latest merge request version to retrieve SHAs
+      const versionsRes = await axios.get(
+        `${this.apiUrl}/projects/${projectId}/merge_requests/${mrIid}/versions`,
+        {
+          headers: { 'PRIVATE-TOKEN': this.accessToken },
+        }
+      );
+      const latestVersion = versionsRes.data[0];
+      if (!latestVersion) throw new Error('Could not fetch MR versions');
+
+      const position = {
+        position_type: 'text',
+        base_sha: latestVersion.base_commit_sha,
+        head_sha: latestVersion.head_commit_sha,
+        start_sha: latestVersion.start_commit_sha,
+        new_path: filePath,
+        old_path: oldPath || filePath,
+      };
+
+      // Added line (green): only new_line
+      if (lineNumber && !oldLine) {
+        position.new_line = lineNumber;
+      }
+
+      // Removed line (red): only old_line
+      else if (!lineNumber && oldLine) {
+        position.old_line = oldLine;
+      }
+
+      // Unchanged line: both new_line and old_line
+      else if (lineNumber && oldLine) {
+        position.new_line = lineNumber;
+        position.old_line = oldLine;
+      }
+
       await axios.post(
         `${this.apiUrl}/projects/${projectId}/merge_requests/${mrIid}/discussions`,
         {
           body: comment,
-          position: {
-            position_type: 'text',
-            new_path: filePath,
-            new_line: lineNumber,
-            base_sha: null,
-            head_sha: null,
-            start_sha: null
-          }
+          position,
         },
         {
           headers: { 'PRIVATE-TOKEN': this.accessToken },
